@@ -1,3 +1,5 @@
-import { server } from './server'
+import "dotenv/config";
 
-server.listen('3333')
+import { server } from "./server";
+
+server.listen("3333");
