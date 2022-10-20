@@ -2,7 +2,6 @@ import mysqlServer from "mysql2";
 import { errorHandler } from "../errorHandler";
 import {
   Categories,
-  Category,
   SaveCategory,
   UpdateCategory,
   RemoveCategory,
