@@ -14,14 +14,12 @@ export const routes = (server: Server) => {
 
       res.status(200);
       res.json(categories);
-
-      next();
     } catch (error) {
       res.status(400);
       res.send(error);
-
-      next();
     }
+
+    next();
   });
 
   server.post("/category", async (req, res, next) => {
@@ -32,14 +30,12 @@ export const routes = (server: Server) => {
 
       res.status(200);
       res.json(categories);
-
-      next();
     } catch (error) {
       res.status(400);
       res.send(error);
-
-      next();
     }
+
+    next();
   });
 
   server.put("/category/:id", async (req, res, next) => {
@@ -51,14 +47,12 @@ export const routes = (server: Server) => {
 
       res.status(200);
       res.json(categories);
-
-      next();
     } catch (error) {
       res.status(400);
       res.send(error);
-
-      next();
     }
+
+    next();
   });
 
   server.del("/category/:id", async (req, res, next) => {
@@ -69,13 +63,11 @@ export const routes = (server: Server) => {
 
       res.status(200);
       res.json(category);
-
-      next();
     } catch (error) {
       res.status(400);
       res.send(error);
-
-      next();
     }
+
+    next();
   });
 };

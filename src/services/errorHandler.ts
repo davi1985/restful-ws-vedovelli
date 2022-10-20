@@ -1,7 +1,7 @@
 import mysqlServer from "mysql2";
 
 export const errorHandler = (
-  error: mysqlServer.QueryError,
+  error: mysqlServer.QueryError | null,
   msg: string,
   rejectFunction: (reason?: any) => void
 ) => {
