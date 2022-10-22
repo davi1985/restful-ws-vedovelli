@@ -1,6 +1,6 @@
-<div style="display:flex; justify-content: center; margin-bottom:10px">
+<p align="center">
  <img src='./rest.jpg'/>
-</div>
+</p>
 
 <h1 align="center">RESTful with Node.js</h1>
 
