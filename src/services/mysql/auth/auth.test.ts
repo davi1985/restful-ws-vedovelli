@@ -4,7 +4,6 @@ import { connection } from "../tests/setup";
 import { users } from "../users";
 import { auth } from "./auth";
 
-const usersModule = users(connection);
 const authModule = auth(connection);
 
 const create = () => users(connection).save("user@test.com", "123456");

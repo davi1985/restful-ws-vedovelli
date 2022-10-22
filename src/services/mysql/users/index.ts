@@ -8,7 +8,9 @@ export const users = (connection: mysqlServer.Connection) => {
   return {
     all: async () => {
       return new Promise<Users>((resolve, reject) => {
-        connection.query("SELECT id, email FROM users", (error, results) => {
+        const query = "SELECT id, email FROM users";
+
+        connection.query(query, (error, results) => {
           if (error) {
             return errorHandler(error, "Falha ao listar as usuários", reject);
           }
@@ -22,9 +24,12 @@ export const users = (connection: mysqlServer.Connection) => {
 
     save: async (email: string, password: string) => {
       return new Promise<SaveUser>((resolve, reject) => {
+        const query = "INSERT INTO users (email,password) VALUES (?,?)";
+        const queryData = [email, sha1(password)];
+
         connection.execute(
-          "INSERT INTO users (email,password) VALUES (?,?)",
-          [email, sha1(password)],
+          query,
+          queryData,
           (error, results: mysqlServer.ResultSetHeader) => {
             if (error) {
               return errorHandler(
@@ -47,9 +52,12 @@ export const users = (connection: mysqlServer.Connection) => {
 
     update: async (id: number, password: string) => {
       return new Promise<UpdateUser>((resolve, reject) => {
+        const query = "UPDATE users SET password = ? WHERE id = ?";
+        const queryData = [sha1(password), id];
+
         connection.execute(
-          "UPDATE users SET password = ? WHERE id = ?",
-          [sha1(password), id],
+          query,
+          queryData,
           (error, results: mysqlServer.ResultSetHeader) => {
             if (error || !results.affectedRows) {
               return errorHandler(
@@ -72,9 +80,12 @@ export const users = (connection: mysqlServer.Connection) => {
 
     remove: async (id: number) => {
       return new Promise<RemoveUser>((resolve, reject) => {
+        const query = "DELETE FROM users WHERE id = ?";
+        const queryData = [id];
+
         connection.execute(
-          "DELETE FROM users WHERE id = ?",
-          [id],
+          query,
+          queryData,
           (error, results: mysqlServer.ResultSetHeader) => {
             if (error || !results.affectedRows) {
               return errorHandler(

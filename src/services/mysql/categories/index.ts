@@ -2,16 +2,18 @@ import mysqlServer from "mysql2";
 import { errorHandler } from "../../errorHandler";
 import {
   Categories,
+  RemoveCategory,
   SaveCategory,
   UpdateCategory,
-  RemoveCategory,
 } from "./types";
 
 export const categories = (connection: mysqlServer.Connection) => {
   return {
     all: async () => {
       return new Promise<Categories>((resolve, reject) => {
-        connection.query("SELECT * FROM categories", (error, results) => {
+        const query = "SELECT * FROM categories";
+
+        connection.query(query, (error, results) => {
           if (error) {
             return errorHandler(error, "Falha ao listar as categorias", reject);
           }
@@ -25,9 +27,12 @@ export const categories = (connection: mysqlServer.Connection) => {
 
     save: async (name: string) => {
       return new Promise<SaveCategory>((resolve, reject) => {
+        const query = "INSERT INTO categories (name) VALUES (?)";
+        const queryData = [name];
+
         connection.execute(
-          "INSERT INTO categories (name) VALUES (?)",
-          [name],
+          query,
+          queryData,
           (error, results: mysqlServer.ResultSetHeader) => {
             if (error) {
               return errorHandler(
@@ -50,9 +55,12 @@ export const categories = (connection: mysqlServer.Connection) => {
 
     update: async (id: number, name: string) => {
       return new Promise<UpdateCategory>((resolve, reject) => {
+        const query = "UPDATE categories SET name = ? WHERE id = ?";
+        const queryData = [name, id];
+
         connection.execute(
-          "UPDATE categories SET name = ? WHERE id = ?",
-          [name, id],
+          query,
+          queryData,
           (error, results: mysqlServer.ResultSetHeader) => {
             if (error || !results.affectedRows) {
               return errorHandler(
@@ -76,9 +84,12 @@ export const categories = (connection: mysqlServer.Connection) => {
 
     remove: async (id: number) => {
       return new Promise<RemoveCategory>((resolve, reject) => {
+        const query = "DELETE FROM categories WHERE id = ?";
+        const queryData = [id];
+
         connection.execute(
-          "DELETE FROM categories WHERE id = ?",
-          [id],
+          query,
+          queryData,
           (error, results: mysqlServer.ResultSetHeader) => {
             if (error || !results.affectedRows) {
               return errorHandler(

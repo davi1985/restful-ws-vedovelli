@@ -4,6 +4,10 @@ import sha1 from "sha1";
 import jwt from "jsonwebtoken";
 import { errorHandler } from "../../errorHandler";
 
+interface IToken {
+  token: string;
+}
+
 export const auth = (connection: mysqlServer.Connection) => {
   return {
     authenticate: async (email: string, password: string) => {
@@ -11,7 +15,7 @@ export const auth = (connection: mysqlServer.Connection) => {
         "SELECT id, email FROM users WHERE email = ? AND password = ?";
       const queryData = [email, sha1(password)];
 
-      return new Promise<{ token: string }>((resolve, reject) => {
+      return new Promise<IToken>((resolve, reject) => {
         connection.query(
           queryString,
           queryData,

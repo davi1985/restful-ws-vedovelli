@@ -1,15 +1,17 @@
-import { createServer, plugins } from 'restify'
-import { routes } from '../http/routes'
-import { cors } from './cors'
+import { createServer, plugins } from "restify";
+import { routes } from "../http/routes";
+import { cors } from "./cors";
+import { jwtMiddleware } from "../middlewares/jwt";
 
-const server = createServer()
+const server = createServer();
 
-// cors execution
-server.pre(cors.preflight)
-server.use(cors.actual)
-server.use(plugins.bodyParser())
+const exclusionsRoutes = ["/auth"];
 
-// routes
-routes(server)
+server.pre(cors.preflight);
+server.use(cors.actual);
+server.use(plugins.bodyParser());
+server.use(jwtMiddleware({ exclusionsRoutes }));
 
-export { server }
+routes(server);
+
+export { server };

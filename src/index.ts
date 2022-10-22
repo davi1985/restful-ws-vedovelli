@@ -2,4 +2,4 @@ import "dotenv/config";
 
 import { server } from "./server";
 
-server.listen("3333");
+server.listen(3333);

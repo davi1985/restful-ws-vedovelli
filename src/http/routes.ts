@@ -1,35 +1,20 @@
-import { Server } from "restify";
+import { Next, Request, Response, Server } from "restify";
 import { db } from "../services";
 
 export const routes = (server: Server) => {
-  server.post("/auth", async (req, res, next) => {
-    const { email, password } = req.body;
-
-    try {
-      const token = await db.auth().authenticate(email, password);
-
-      res.status(200);
-      res.send(token);
-    } catch (error) {
-      res.status(400);
-      res.send(error);
-    }
-
-    next();
-  });
-
-  server.get("/", (_, res, next) => {
+  server.get("/", (_: Request, res: Response, next: Next) => {
     res.send("Enjoy the silence!");
 
     next();
   });
 
-  server.get("/category", async (req, res, next) => {
-    try {
-      const categories = await db.categories().all();
+  server.post("/auth", async (req: Request, res: Response, next: Next) => {
+    const { email, password } = req.body;
 
-      res.status(200);
-      res.json(categories);
+    try {
+      const token = await db.auth().authenticate(email, password);
+
+      res.send(201, token);
     } catch (error) {
       res.status(400);
       res.send(error);
@@ -38,52 +23,64 @@ export const routes = (server: Server) => {
     next();
   });
 
-  server.post("/category", async (req, res, next) => {
+  server.get("/category", async (_: Request, res: Response, next: Next) => {
+    try {
+      const categories = await db.categories().all();
+
+      res.send(200, categories);
+    } catch (error) {
+      res.send(400, error);
+    }
+
+    next();
+  });
+
+  server.post("/category", async (req: Request, res: Response, next: Next) => {
     const { name } = req.body;
 
     try {
       const categories = await db.categories().save(name);
 
-      res.status(200);
-      res.json(categories);
+      res.send(201, categories);
     } catch (error) {
-      res.status(400);
-      res.send(error);
+      res.send(400, error);
     }
 
     next();
   });
 
-  server.put("/category/:id", async (req, res, next) => {
-    const { id } = req.params;
-    const { name } = req.body;
+  server.put(
+    "/category/:id",
+    async (req: Request, res: Response, next: Next) => {
+      const { id } = req.params;
+      const { name } = req.body;
 
-    try {
-      const categories = await db.categories().update(Number(id), name);
+      try {
+        const categories = await db.categories().update(Number(id), name);
 
-      res.status(200);
-      res.json(categories);
-    } catch (error) {
-      res.status(400);
-      res.send(error);
+        res.send(200, categories);
+      } catch (error) {
+        res.send(400, error);
+      }
+
+      next();
     }
+  );
 
-    next();
-  });
+  server.del(
+    "/category/:id",
+    async (req: Request, res: Response, next: Next) => {
+      const { id } = req.params;
 
-  server.del("/category/:id", async (req, res, next) => {
-    const { id } = req.params;
+      try {
+        const category = await db.categories().remove(Number(id));
 
-    try {
-      const category = await db.categories().remove(Number(id));
+        res.send(204, category);
+      } catch (error) {
+        res.send(400, error);
+      }
 
-      res.status(200);
-      res.json(category);
-    } catch (error) {
-      res.status(400);
-      res.send(error);
+      next();
     }
-
-    next();
-  });
+  );
 };
