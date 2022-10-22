@@ -1,46 +1,43 @@
 import mysqlServer from "mysql2";
-import { errorHandler } from "../errorHandler";
-import {
-  Categories,
-  SaveCategory,
-  UpdateCategory,
-  RemoveCategory,
-} from "./types";
+import sha1 from "sha1";
+import { errorHandler } from "../../errorHandler";
 
-export const categories = (connection: mysqlServer.Connection) => {
+import { RemoveUser, SaveUser, UpdateUser, Users } from "./types";
+
+export const users = (connection: mysqlServer.Connection) => {
   return {
     all: async () => {
-      return new Promise<Categories>((resolve, reject) => {
-        connection.query("SELECT * FROM categories", (error, results) => {
+      return new Promise<Users>((resolve, reject) => {
+        connection.query("SELECT id, email FROM users", (error, results) => {
           if (error) {
-            return errorHandler(error, "Falha ao listar as categorias", reject);
+            return errorHandler(error, "Falha ao listar as usuários", reject);
           }
 
           resolve({
-            categories: results,
-          } as unknown as Categories);
+            users: results,
+          } as unknown as Users);
         });
       });
     },
 
-    save: async (name: string) => {
-      return new Promise<SaveCategory>((resolve, reject) => {
+    save: async (email: string, password: string) => {
+      return new Promise<SaveUser>((resolve, reject) => {
         connection.execute(
-          "INSERT INTO categories (name) VALUES (?)",
-          [name],
+          "INSERT INTO users (email,password) VALUES (?,?)",
+          [email, sha1(password)],
           (error, results: mysqlServer.ResultSetHeader) => {
             if (error) {
               return errorHandler(
                 error,
-                `Falha ao salvar a categoria ${name}`,
+                `Falha ao salvar a usuário ${email}`,
                 reject
               );
             }
 
             resolve({
-              category: {
+              user: {
                 id: results.insertId,
-                name,
+                email,
               },
             });
           }
@@ -48,24 +45,23 @@ export const categories = (connection: mysqlServer.Connection) => {
       });
     },
 
-    update: async (id: number, name: string) => {
-      return new Promise<UpdateCategory>((resolve, reject) => {
+    update: async (id: number, password: string) => {
+      return new Promise<UpdateUser>((resolve, reject) => {
         connection.execute(
-          "UPDATE categories SET name = ? WHERE id = ?",
-          [name, id],
+          "UPDATE users SET password = ? WHERE id = ?",
+          [sha1(password), id],
           (error, results: mysqlServer.ResultSetHeader) => {
             if (error || !results.affectedRows) {
               return errorHandler(
                 error,
-                `Falha ao atualizar a categoria ${name}`,
+                `Falha ao atualizar a usuário de id ${id}`,
                 reject
               );
             }
 
             resolve({
-              category: {
+              user: {
                 id,
-                name,
               },
               affectedRows: results.affectedRows,
             });
@@ -75,21 +71,21 @@ export const categories = (connection: mysqlServer.Connection) => {
     },
 
     remove: async (id: number) => {
-      return new Promise<RemoveCategory>((resolve, reject) => {
+      return new Promise<RemoveUser>((resolve, reject) => {
         connection.execute(
-          "DELETE FROM categories WHERE id = ?",
+          "DELETE FROM users WHERE id = ?",
           [id],
           (error, results: mysqlServer.ResultSetHeader) => {
             if (error || !results.affectedRows) {
               return errorHandler(
                 error,
-                `Falha ao deletar a categoria de id ${id}`,
+                `Falha ao deletar a usuário de id ${id}`,
                 reject
               );
             }
 
             resolve({
-              message: "Categoria removida com sucesso",
+              message: "Usuário removido com sucesso",
               affectedRows: results.affectedRows,
             });
           }

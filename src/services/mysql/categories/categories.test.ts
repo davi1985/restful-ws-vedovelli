@@ -1,6 +1,6 @@
 import test from "ava";
 
-import { connection } from "./setup";
+import { connection } from "../tests/setup";
 import { categories } from "../categories";
 
 const categoriesModule = categories(connection);

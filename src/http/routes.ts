@@ -2,6 +2,22 @@ import { Server } from "restify";
 import { db } from "../services";
 
 export const routes = (server: Server) => {
+  server.post("/auth", async (req, res, next) => {
+    const { email, password } = req.body;
+
+    try {
+      const token = await db.auth().authenticate(email, password);
+
+      res.status(200);
+      res.send(token);
+    } catch (error) {
+      res.status(400);
+      res.send(error);
+    }
+
+    next();
+  });
+
   server.get("/", (_, res, next) => {
     res.send("Enjoy the silence!");
 

@@ -1,5 +1,7 @@
 import mysqlServer from "mysql2";
+import { auth } from "./mysql/auth/auth";
 import { categories } from "./mysql/categories";
+import { users } from "./mysql/users";
 
 const connection = mysqlServer.createConnection({
   host: process.env.MYSQL_HOST as string,
@@ -10,7 +12,11 @@ const connection = mysqlServer.createConnection({
 });
 
 const categoryModule = categories(connection);
+const usersModule = users(connection);
+const authModule = auth(connection);
 
 export const db = {
   categories: () => categoryModule,
+  users: () => usersModule,
+  auth: () => authModule,
 };
