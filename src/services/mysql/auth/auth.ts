@@ -3,50 +3,39 @@ import sha1 from "sha1";
 
 import jwt from "jsonwebtoken";
 import { errorHandler } from "../../errorHandler";
-
-interface IToken {
-  token: string;
-}
+import { Token, User } from "./types";
 
 export const auth = (connection: mysqlServer.Connection) => {
   return {
-    authenticate: async (email: string, password: string) => {
+    authenticate: async (email: string, password: string): Promise<Token> => {
       const queryString =
         "SELECT id, email FROM users WHERE email = ? AND password = ?";
       const queryData = [email, sha1(password)];
 
-      return new Promise<IToken>((resolve, reject) => {
-        connection.query(
-          queryString,
-          queryData,
-          (error, results: mysqlServer.RowDataPacket[]) => {
-            if (error) {
-              return errorHandler(
-                error,
-                "Falha ao localizar o usuário",
-                reject
-              );
-            }
+      const [results] = await connection
+        .promise()
+        .query(queryString, queryData);
 
-            const { email, id } = results[0];
+      const user = results as unknown as User;
 
-            const token = jwt.sign(
-              {
-                email,
-                id,
-              },
-              process.env.JWT_SECRET as string,
-              {
-                expiresIn: 60 * 60 * 24, // one day
-              }
-            );
+      if (!user) {
+        errorHandler("Falha ao localizar o usuário");
+      }
 
-            resolve({
-              token,
-            });
-          }
-        );
-      });
+      const token = jwt.sign(
+        {
+          email,
+          id: user.id,
+        },
+        process.env.JWT_SECRET as string,
+        {
+          expiresIn: 60 * 60 * 24, // one day
+        }
+      );
+
+      return {
+        token,
+      };
     },
   };
 };

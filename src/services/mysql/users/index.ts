@@ -6,102 +6,70 @@ import { RemoveUser, SaveUser, UpdateUser, Users } from "./types";
 
 export const users = (connection: mysqlServer.Connection) => {
   return {
-    all: async () => {
-      return new Promise<Users>((resolve, reject) => {
-        const query = "SELECT id, email FROM users";
+    all: async (): Promise<Users> => {
+      const query = "SELECT * FROM users";
 
-        connection.query(query, (error, results) => {
-          if (error) {
-            return errorHandler(error, "Falha ao listar as usuários", reject);
-          }
+      const results = await connection.promise().query(query);
 
-          resolve({
-            users: results,
-          } as unknown as Users);
-        });
-      });
+      return { users: results[0] } as unknown as Users;
     },
 
-    save: async (email: string, password: string) => {
-      return new Promise<SaveUser>((resolve, reject) => {
-        const query = "INSERT INTO users (email,password) VALUES (?,?)";
-        const queryData = [email, sha1(password)];
+    save: async (email: string, password: string): Promise<SaveUser> => {
+      const query = "INSERT INTO users (email,password) VALUES (?,?)";
+      const queryData = [email, sha1(password)];
 
-        connection.execute(
-          query,
-          queryData,
-          (error, results: mysqlServer.ResultSetHeader) => {
-            if (error) {
-              return errorHandler(
-                error,
-                `Falha ao salvar a usuário ${email}`,
-                reject
-              );
-            }
+      const [results] = (await connection
+        .promise()
+        .query(query, queryData)) as unknown as mysqlServer.ResultSetHeader[];
 
-            resolve({
-              user: {
-                id: results.insertId,
-                email,
-              },
-            });
-          }
-        );
-      });
+      if (results.affectedRows === 0) {
+        errorHandler(`Falha ao salvar a usuário ${email}`);
+      }
+
+      return {
+        user: {
+          id: results.insertId,
+          email,
+        },
+      };
     },
 
-    update: async (id: number, password: string) => {
-      return new Promise<UpdateUser>((resolve, reject) => {
-        const query = "UPDATE users SET password = ? WHERE id = ?";
-        const queryData = [sha1(password), id];
+    update: async (id: number, password: string): Promise<UpdateUser> => {
+      const query = "UPDATE users SET password = ? WHERE id = ?";
+      const queryData = [sha1(password), id];
 
-        connection.execute(
-          query,
-          queryData,
-          (error, results: mysqlServer.ResultSetHeader) => {
-            if (error || !results.affectedRows) {
-              return errorHandler(
-                error,
-                `Falha ao atualizar a usuário de id ${id}`,
-                reject
-              );
-            }
+      const [results] = (await connection
+        .promise()
+        .query(query, queryData)) as unknown as mysqlServer.ResultSetHeader[];
 
-            resolve({
-              user: {
-                id,
-              },
-              affectedRows: results.affectedRows,
-            });
-          }
-        );
-      });
+      if (results.affectedRows === 0) {
+        errorHandler(`Não foi possível atualizar a categoria de id ${id}`);
+      }
+
+      return {
+        user: {
+          id,
+        },
+        affectedRows: results.affectedRows,
+      };
     },
 
-    remove: async (id: number) => {
-      return new Promise<RemoveUser>((resolve, reject) => {
-        const query = "DELETE FROM users WHERE id = ?";
-        const queryData = [id];
+    remove: async (id: number): Promise<RemoveUser> => {
+      const query = "DELETE FROM users WHERE id = ?";
+      const queryData = [id];
 
-        connection.execute(
-          query,
-          queryData,
-          (error, results: mysqlServer.ResultSetHeader) => {
-            if (error || !results.affectedRows) {
-              return errorHandler(
-                error,
-                `Falha ao deletar a usuário de id ${id}`,
-                reject
-              );
-            }
+      const [results] = (await connection
+        .promise()
+        .query(query, queryData)) as unknown as mysqlServer.ResultSetHeader[];
 
-            resolve({
-              message: "Usuário removido com sucesso",
-              affectedRows: results.affectedRows,
-            });
-          }
-        );
-      });
+      if (results.affectedRows === 0) {
+        errorHandler(`Falha ao deletar a usuário de id ${id}`);
+      }
+
+      return {
+        message: "Categoria removida com sucesso",
+        affectedRows: results.affectedRows,
+      };
     },
   };
 };

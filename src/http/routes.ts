@@ -15,7 +15,7 @@ export const routes = (server: Server) => {
       const token = await db.auth().authenticate(email, password);
 
       res.send(201, token);
-    } catch (error) {
+    } catch (error: any) {
       res.status(400);
       res.send(error);
     }
@@ -59,8 +59,8 @@ export const routes = (server: Server) => {
         const categories = await db.categories().update(Number(id), name);
 
         res.send(200, categories);
-      } catch (error) {
-        res.send(400, error);
+      } catch (error: any) {
+        res.send(400, { message: error.message });
       }
 
       next();
@@ -75,9 +75,9 @@ export const routes = (server: Server) => {
       try {
         const category = await db.categories().remove(Number(id));
 
-        res.send(204, category);
-      } catch (error) {
-        res.send(400, error);
+        res.send(category);
+      } catch (error: any) {
+        res.send(400, { message: error.message });
       }
 
       next();

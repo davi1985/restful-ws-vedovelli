@@ -9,103 +9,71 @@ import {
 
 export const categories = (connection: mysqlServer.Connection) => {
   return {
-    all: async () => {
-      return new Promise<Categories>((resolve, reject) => {
-        const query = "SELECT * FROM categories";
+    all: async (): Promise<Categories> => {
+      const query = "SELECT * FROM categories";
 
-        connection.query(query, (error, results) => {
-          if (error) {
-            return errorHandler(error, "Falha ao listar as categorias", reject);
-          }
+      const results = await connection.promise().query(query);
 
-          resolve({
-            categories: results,
-          } as unknown as Categories);
-        });
-      });
+      return { categories: results[0] } as unknown as Categories;
     },
 
-    save: async (name: string) => {
-      return new Promise<SaveCategory>((resolve, reject) => {
-        const query = "INSERT INTO categories (name) VALUES (?)";
-        const queryData = [name];
+    save: async (name: string): Promise<SaveCategory> => {
+      const query = "INSERT INTO categories (name) VALUES (?)";
+      const queryData = [name];
 
-        connection.execute(
-          query,
-          queryData,
-          (error, results: mysqlServer.ResultSetHeader) => {
-            if (error) {
-              return errorHandler(
-                error,
-                `Falha ao salvar a categoria ${name}`,
-                reject
-              );
-            }
+      const [results] = (await connection
+        .promise()
+        .query(query, queryData)) as unknown as mysqlServer.ResultSetHeader[];
 
-            resolve({
-              category: {
-                id: results.insertId,
-                name,
-              },
-            });
-          }
-        );
-      });
+      if (results.affectedRows === 0) {
+        errorHandler(`Não foi possível salvar a categoria ${name}`);
+      }
+
+      return {
+        category: {
+          id: results.insertId,
+          name,
+        },
+      };
     },
 
-    update: async (id: number, name: string) => {
-      return new Promise<UpdateCategory>((resolve, reject) => {
-        const query = "UPDATE categories SET name = ? WHERE id = ?";
-        const queryData = [name, id];
+    update: async (id: number, name: string): Promise<UpdateCategory> => {
+      const query = "UPDATE categories SET name = ? WHERE id = ?";
+      const queryData = [name, id];
 
-        connection.execute(
-          query,
-          queryData,
-          (error, results: mysqlServer.ResultSetHeader) => {
-            if (error || !results.affectedRows) {
-              return errorHandler(
-                error,
-                `Falha ao atualizar a categoria ${name}`,
-                reject
-              );
-            }
+      const [results] = (await connection
+        .promise()
+        .query(query, queryData)) as unknown as mysqlServer.ResultSetHeader[];
 
-            resolve({
-              category: {
-                id,
-                name,
-              },
-              affectedRows: results.affectedRows,
-            });
-          }
-        );
-      });
+      if (results.affectedRows === 0) {
+        errorHandler(`Não foi possível atualizar a categoria de id ${id}`);
+      }
+
+      return {
+        category: {
+          id,
+          name,
+        },
+        affectedRows: results.affectedRows,
+      };
     },
 
-    remove: async (id: number) => {
-      return new Promise<RemoveCategory>((resolve, reject) => {
-        const query = "DELETE FROM categories WHERE id = ?";
-        const queryData = [id];
+    remove: async (id: number): Promise<RemoveCategory> => {
+      const query = "DELETE FROM categories WHERE id = ?";
+      const queryData = [id];
 
-        connection.execute(
-          query,
-          queryData,
-          (error, results: mysqlServer.ResultSetHeader) => {
-            if (error || !results.affectedRows) {
-              return errorHandler(
-                error,
-                `Falha ao deletar a categoria de id ${id}`,
-                reject
-              );
-            }
+      const [results] = (await connection
+        .promise()
+        .query(query, queryData)) as unknown as mysqlServer.ResultSetHeader[];
 
-            resolve({
-              message: "Categoria removida com sucesso",
-              affectedRows: results.affectedRows,
-            });
-          }
-        );
-      });
+      if (results.affectedRows === 0) {
+        errorHandler(`Não foi possível remover a categoria de id ${id}`);
+      }
+
+      return {
+        message: "Categoria removida com sucesso",
+        affectedRows: results.affectedRows,
+      };
     },
   };
 };
